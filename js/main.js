@@ -1,12 +1,25 @@
 'use strict';
 
 /*
-НЕ ЗАКОНЧИЛ В ОСНОВНОМ ЗАДАНИИ (3-2):
+НЕЗАКОНЧЕННЫЕ ЗАДАНИЯ
+
+3-2:
 1) В каждом рандомном объекте должно быть от 1 до 3 рандомных комментариев, не повторяющихся! (вот тут видимо сплайс-слайс пригодится). Имена авторов и коомментарии так же случайные.
 2) Сообрази чонибудь с дескрипшинами. Пусть это будет дата, например. Массив дат. Без заморочек - просто строка.
 3) Сделать функцию создания DOM-элемента на основе JS-объекта (пока это не функция у тебя)
 4) Сделать функцию заполнения блока DOM-элементами на основе массива JS-объектов
 (Пункты задания примерно соответствуют функциям, которые вы должны создать.)
+
+3-3:
+Список комментариев под фотографией: комментарии должны вставляться в блок .social__comments. Разметка каждого комментария должна выглядеть так:
+<li class="social__comment">
+  <img
+    class="social__picture"
+    src="img/avatar-{{случайное число от 1 до 6}}.svg"
+    alt="{{Автор комментария}}"
+    width="35" height="35">
+  <p class="social__text">{{текст комментария}}</p>
+</li>
 */
 
 var COUNT_OF_PHOTOS = 26;
@@ -36,7 +49,7 @@ var generateRandomData = function (count) {
   for (var i = 0; i < count; i++) {
     exemplars[i] = {
       url: 'photos/' + (i + 1) + '.jpg', // !!!!!Адреса картинок не должны повторяться!!!!!
-      description: 'описание фоторграфии',
+      description: 'описание фотографии',
       likes: generateRandomNumber(MAX_LIKES_NUMBER, MIN_LIKES_NUMBER),
       comments: [
         {
@@ -86,3 +99,17 @@ for (var i = 0; i < COUNT_OF_PHOTOS; i++) {
 }
 
 picturesContainer.appendChild(fragment);
+
+/* ------------------------------------------------------ */
+
+// БЛОК ПОКАЗА БОЛЬШОГО ИЗОБРАЖЕНИЯ
+var bigPicture = document.querySelector('.big-picture');
+bigPicture.classList.remove('hidden');
+bigPicture.querySelector('.big-picture__img').children[0].src = photoDescription[0].url;
+bigPicture.querySelector('.likes-count').textContent = photoDescription[0].likes;
+bigPicture.querySelector('.comments-count').textContent = photoDescription[0].comments.length;
+bigPicture.querySelector('.comments-count').style.color = 'red'; // временно, чтобы видел свою ошибку
+bigPicture.querySelector('.social__caption').textContent = photoDescription[0].description;
+
+document.querySelector('.social__comment-count').classList.add('visually-hidden'); // Убрал счётчик комментариев
+document.querySelector('.comments-loader').classList.add('visually-hidden'); // Убрал "Загрузить ещё"
