@@ -186,3 +186,89 @@ document.addEventListener('keydown', onEscPress);
 // НА ДАННОМ ЭТАПЕ ИЗ БАГОВ - ПРИ ОТКРЫТОЙ ФОРМЕ (если конрол в фокусе) НАЖАТИЕ НА ЭНТЕР ИЛИ ПРОБЕЛ ПРИВОДИТ К ОТКРЫТИЮ ИНТЕРФЕЙСА ЗАГРУЗКИ ФАЙЛА - В БУДУЩЕМ НЕ ЗАБУДЬ ПРО ЭТО.
 
 /* добавим на пин слайдера .effect-level__pin обработчик события mouseup, который будет согласно ТЗ изменять уровень насыщенности фильтра для изображения. Для определения уровня насыщенности, нужно рассчитать положение пина слайдера относительно всего блока и воспользоваться пропорцией, чтобы понять, какой уровень эффекта нужно применить. */
+
+
+
+var INITIAL_STATE = 20; // начальное значение уровня эффекта
+
+// Слайдер для регулировки глубины эффекта
+var depthOfEffectSlider = document.querySelector('.effect-level');
+
+// Пин слайдера
+var sliderPin = depthOfEffectSlider.querySelector('.effect-level__pin');
+
+// Шкала слайдера
+var sliderScale = depthOfEffectSlider.querySelector('.effect-level__line');
+
+// Значение слайдера
+var sliderValue = document.querySelector('effect-level__value');
+
+sliderPin.addEventListener('mouseup', function() {
+  // Сколько процентов на шкале показывает пин
+  var pinPercentPosition = Math.round(sliderPin.offsetLeft * 100 / sliderScale.clientWidth);
+  console.log(pinPercentPosition);
+});
+
+var sliderReset = function () {
+  sliderValue = INITIAL_STATE; // ПОКА ТАК
+};
+
+var onFilterChange = function () {
+  sliderReset();
+  console.log('РАБОТАЕТ');
+};
+
+var filtersKit = document.querySelector('.effects__list');
+filtersKit.addEventListener('change', onFilterChange);
+
+// Поле ввода хэштэгов
+var hashtagsInput = document.querySelector('.text__hashtags');
+
+document.querySelector('.img-upload__input').removeAttribute('required'); // ПОКА УБРАЛ, ЧТОБЫ НЕ МЕШАЛ ТЕСТИТЬ ПОЛЯ ФОРМЫ
+
+hashtagsInput.setAttribute('required', 'required'); // ТОЖЕ ВРЕМЕННО
+/*
+Это был быстрый вариант... Но мы тут затем чтобы учиться, потому ниже давай долгий вариант запилим
+hashtagsInput.setAttribute('pattern', '^(([#][A-Za-zА-Яа-я0-9]{1,19})([ \t\v\r\n\f][#][A-Za-zа-яА-Я0-9]{1,19}){0,4})?$');
+hashtagsInput.addEventListener('invalid', function () {
+  if (hashtagsInput.validity.patternMismatch) {
+    hashtagsInput.setCustomValidity('Дружище, чото не по шаблону!');
+  }
+});
+*/
+
+var getArrayOfHashtags = function () {
+  var arrayOfHashtags = (hashtagsInput.value.trim()).split(' ');
+  // БАГ - воспринимает пробелы, как отдельные части массива строк. Надо как-то чтобы он их удалял в конечной версии, перед проверкой ниже. Думаю, уже в конечном массиве (то есть на уровне этого комментария) просто перехеречивать все элементы, которые равны любому количеству пробелов. Вероятно снова привет RegExp и String-овый метод .replace
+
+  if (arrayOfHashtags.length > 5) {
+    hashtagsInput.setCustomValidity('Не более пяти слов! Сейчас: ' + arrayOfHashtags.length);
+  } else {
+   // ВОТ ПОЧТИ ВСЁ ЗАЕБИСЬ, НО ОН ВСЕГДА ПРОВЕРЯЕТ ТОЛЬКО ПОСЛЕДНИЙ ХЭШТЭГ МАССИВА - ЭТО ТОЧНО ПРО ЗАМЫКАНИЯ
+  // (так что пока тести с одним элементом)
+  //НЕВЫПОЛНЕННЫЕ ЗАДАЧИ:
+      // 1) один и тот же хэш-тег не может быть использован дважды;
+      // 2) теги нечувствительны к регистру: #ХэшТег и #хэштег считаются одним и тем же тегом;
+    for (var i = 0; i < arrayOfHashtags.length; i++) {
+      if (arrayOfHashtags[i].charAt(0) !== "#") {
+        hashtagsInput.setCustomValidity('"' + arrayOfHashtags[i] + '" не хэштэг! (первый символ должен быть #)');
+      } else if (arrayOfHashtags[i].length < 2) {
+        hashtagsInput.setCustomValidity('Не менее двух символов!');
+      } else if (arrayOfHashtags[i].length > 20) {
+        hashtagsInput.setCustomValidity('Длина хэштэга '  + arrayOfHashtags[i] + ' (включая решетку) не должна превышать 20 символов!');
+      } else {
+        hashtagsInput.setCustomValidity('');
+      }
+    }
+  }
+}
+
+var onHashtagsInputChange = function () {
+  getArrayOfHashtags();
+}
+
+hashtagsInput.addEventListener('change', onHashtagsInputChange);
+
+hashtagsInput.addEventListener('keydown', function (evt) {
+  evt.stopPropagation();
+});
