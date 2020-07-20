@@ -1,21 +1,14 @@
-// import {a} from "./utils.js";
-// console.log(a);
-//import {getRandomInteger, getRandomArrayItem} from "./utils.js";
-
-// Пока кучей, потом раскидаю на объекты по типу и на модули
-// +1 указываю там, где значение помещается в функцию getRandomInteger аргументом для верхнего предела
-// Все подобные константы можешь скидать в один модуль, но внутри обязательно разграничь, в каком из модулей они используются
 const ENTER_KEYCODE = 13;
 const ESC_KEYCODE = 27;
 const SPACE_KEYCODE = 32; // Вроде... не тестил.
-const COUNT_OF_PHOTOS = 27;
-const SHOW_PHOTOS = 11;
+
+const COUNT_OF_PHOTOS = 27; // Всего фотографий в папке
+const SHOW_PHOTOS = 26; // Загружать случайных фотографий
 const MAX_AVATAR_NUMBER = 6+1;
 const MIN_LIKES_NUMBER = 15;
 const MAX_LIKES_NUMBER = 200+1;
 
-// Вот чото не уверен я, что сюда "словарь" приплёл...
-const COMMENTS_VOCABULARY = [
+const COMMENTS = [
   'Всё отлично!',
   'В целом всё неплохо. Но не всё.',
   'Когда вы делаете фотографию, хорошо бы убирать палец из кадра. В конце концов это просто непрофессионально.',
@@ -24,25 +17,17 @@ const COMMENTS_VOCABULARY = [
   'Лица у людей на фотке перекошены, как будто их избивают. Как можно было поймать такой неудачный момент?!'
 ];
 
-const NAMES = ['Вася', 'Петя', 'Маша', 'Катя', 'Альберт']; // Давай-ка ты всё-таки рядом с этим полем добавишь в разметку (сам) ещё и дату публикации и поиграешься с объектом дата, поучишься с ним работать. То есть даты могут быть рандомные, но важно, чтобы комментарии сверху были опубликованы раньше, чем комментарии снизу. Короче да, создай ещё одну сущность "pubDate", сделай под неё вёрстку (разметку и стили), ну и в js тоже всё, как полагается
+const NAMES = ['Вася', 'Петя', 'Маша', 'Катя', 'Альберт'];
 
-const DESCRIPTIONS = ['С поцонаме на рыбалке', 'Вьетнам в 75ом', 'А это мы на Вудстоке', 'Моя бывшая', 'Попросил сфоткать еду для кекста у людей за соседним столиком', 'Очень философская мысль']; // Кстати да, вместо дескрипшина можно тупо нахуярить сюда фраз из инстаграма Ирины-габбе... гыгыгы... С указанием в комментариях ссылки на её инстаграм... ахаха... бля... идеально, если бы они оттуда автоматом парсились...
+const DESCRIPTIONS = ['С поцонаме на рыбалке', 'Вьетнам в 75ом', 'А это мы на Вудстоке', 'Моя бывшая', 'Попросил сфоткать еду для кекста у людей за соседним столиком', 'Очень философская мысль'];
 
-/*
-ЧТО-ТО У МЕНЯ ЗАКРАЛИСЬ ПОДОЗРЕНИЯ, ЧТО ПЕРЕМЕННЫЕ Я КАК-ТО ЧЕРЕЗ ЖОПУ НАЗВАЛ
 
-Код должен быть разделён на отдельные функции. Стоит отдельно объявить функцию генерации случайных данных, функцию создания DOM-элемента на основе JS-объекта, функцию заполнения блока DOM-элементами на основе массива JS-объектов
-3-2:
-3) Сделать функцию создания DOM-элемента на основе JS-объекта (пока это не функция у тебя)
-4) Сделать функцию заполнения блока DOM-элементами на основе массива JS-объектов
-
-*/
-
-// Максимальное вводить на 1
+// Сгенерировать случайное число из диапазона (максимальное вводить на 1 больше)
 const getRandomInteger = (max, min = 0) => {
   return min + Math.floor(Math.random() * (max - min));
 };
 
+// Получить случайный элемент массива
 const getRandomArrayItem = (array) => {
   const randomIndex = getRandomInteger(array.length);
   return array[randomIndex];
@@ -61,7 +46,7 @@ const mixArray = function (arr) {
   return arr;
 };
 
-// JSDoc полагаю (ну типа как другим кодерам передать инфу об интерфейсе твоего творения): ФУНКЦИЯ, которая содаёт count случайных УНИКАЛЬНЫХ значений value. Если в качестве значения передан массив - данные берутся из него, если второй аргумент опущен - генерируются случайные числа... Кстати, надо бы её маленько добработать - ввести третий парметр и заменить им COUNT_OF_PHOTOS, для большей гибкости функции... Только хорошо подумай, как это сделать, потому что второй парметр-то тоже необязательный... Ну как вариант - им обоим дать значения по умолчанию
+// Я понимаю, что подобные многозадачные функции-комбайны это плохо, но тут просто упражнялся в сложных конструкциях
 const generateSetOfUniqueValues = (count, values) => {
   let setOfUniqueNumeric = new Set();
   switch (typeof values) {
@@ -85,15 +70,20 @@ const generateSetOfUniqueValues = (count, values) => {
   }
 }
 
+
+/*------------------------------------- БЛОК ФОТОГРАФИЙ (моки - data/mocks) ------------------------------------- */
+
+// Создаёт данные для комментария
 const generateCommentData = () => {
   comment = {
     avatar: getRandomInteger(MAX_AVATAR_NUMBER, 1),
-    message: Array.from(generateSetOfUniqueValues(getRandomInteger(3, 1), COMMENTS_VOCABULARY)).join(' '),
+    message: Array.from(generateSetOfUniqueValues(getRandomInteger(3, 1), COMMENTS)).join(' '),
     name: getRandomArrayItem(NAMES)
   };
   return comment;
 }
 
+// Создаёт от 1 до 3х комментариев
 const generateComments = () => {
   comments = new Array(getRandomInteger(4, 1)).fill(``).map(() => {
     return generateCommentData();
@@ -101,78 +91,86 @@ const generateComments = () => {
   return comments;
 };
 
+// Перемешивает индексы всех доступных фотографий
 const uniquePhotoIndex = generateSetOfUniqueValues(COUNT_OF_PHOTOS);
 
 
-// Функции стрелочные!
-// Функция создания массива со случайными данными
+// Функция создания массива со случайными данными (о фотографии)
 // Там где можно, откажись от for (теперь можно) - посмотрит как сделано в интенсиве 4
 const generateRandomData = (count) => {
-  const exemplars = [];
-  for (let i = 0; i < count; i++) {
-    exemplars[i] = {
-      url: `photos/${uniquePhotoIndex[i]}.jpg`, 
-      // Фоток побольше закинь, штук 50 (формат 600 на 600, тащи те, что со свободной лицензией)
-      description: getRandomArrayItem(DESCRIPTIONS),
-      likes: getRandomInteger(MAX_LIKES_NUMBER, MIN_LIKES_NUMBER),
-      comments: generateComments()
-    };
-  }
-  return exemplars;
+  return new Array(count)
+    .fill(``)
+    .map(function(exemplar, index) {
+      exemplar = {
+        url: `photos/${uniquePhotoIndex[index]}.jpg`, 
+        description: getRandomArrayItem(DESCRIPTIONS),
+        likes: getRandomInteger(MAX_LIKES_NUMBER, MIN_LIKES_NUMBER),
+        comments: generateComments()
+      };
+    return exemplar;
+    });
 };
 
+/*------------------------------------- БЛОК ФОТОГРАФИЙ (рендер) ------------------------------------- */
+
+// Генерируем массив фотографий с их метаданными
+// Вот это очень важная точка, потому что переменная photosDescriptions дальше используется поголовно и содержит она в себе ДАННЫЕ, которые могут быть получены как из моков, так и с сервера
 const photosDescriptions = generateRandomData(SHOW_PHOTOS);
+console.log(photosDescriptions);
 
-// Контейнер для миниатюр фотографий
-const picturesContainer = document.querySelector('.pictures');
-
-// Шаблон для этих самых фото.
-const template = document.querySelector('#picture').content.querySelector('.picture');
-
-// Фрагмент для упаковки
-const fragment = document.createDocumentFragment();
-
-// А вот на этом этапе на основе данных создаются уже элементы страницы
-// Упаковываю фрагмент N-ным количеством элементов
-for (let i = 0; i < SHOW_PHOTOS; i++) {
-  let photoElement = template.cloneNode(true);
-  photoElement.querySelector('.picture__img').src = photosDescriptions[i].url;
-  photoElement.querySelector('.picture__likes').textContent = photosDescriptions[i].likes;
-  photoElement.querySelector('.picture__comments').textContent = photosDescriptions[i].comments.length;
-  fragment.appendChild(photoElement);
+// Функция создания DOM-элементов на основе JS-объектов 
+// и заполнения блока DOM-элементами на основе массива JS-объектов
+// Короче собрал их пока в одну, не вижу смысла на 2 разных разбивать
+const renderPhotoElements = (numberOfElements) => {
+  // Контейнер для миниатюр фотографий
+  const picturesContainer = document.querySelector('.pictures');
+  // Шаблон для этих самых фото (расположен внизу разметки)
+  const template = document.querySelector('#picture').content.querySelector('.picture');
+  // Фрагмент для упаковки
+  const fragment = document.createDocumentFragment();
+  // А вот на этом этапе на основе данных создаются уже элементы страницы
+  // Упаковываю фрагмент N-ным количеством элементов
+  for (let i = 0; i < numberOfElements; i++) {
+    let photoElement = template.cloneNode(true);
+    photoElement.querySelector('.picture__img').src = photosDescriptions[i].url;
+    photoElement.querySelector('.picture__likes').textContent = photosDescriptions[i].likes;
+    photoElement.querySelector('.picture__comments').textContent = photosDescriptions[i].comments.length;
+    fragment.appendChild(photoElement);
+  }
+  // И выкидываю весь фрагмент на страницу
+  picturesContainer.appendChild(fragment);
 }
 
-picturesContainer.appendChild(fragment);
+renderPhotoElements(SHOW_PHOTOS);
 
-/* ------------------------------------------------------ */
+/*------------------------------------- БЛОК ПОКАЗА И СКРЫТИЯ БОЛЬШОГО ИЗОБРАЖЕНИЯ ------------------------------------- */
 
-// БЛОК ПОКАЗА БОЛЬШОГО ИЗОБРАЖЕНИЯ
-// Вот тут осторожнее с переходом с варом, может сломаться замыкание
-
+// Контейнер, отвечающий за полноэкранный показ изображения. Так же содержит в себе прочие метаданные.
 const bigPicture = document.querySelector('.big-picture');
 
+// Не нравится мне всё-таки название этой функции...
+
 const addClickListener = function (picture) {
+  
   picture.addEventListener('click', function () {
-    // console.log(evt.target === picture); ЕВТ УБРАЛ ИЗ ПАРАМЕТРА, ТАК КАК НЕ ИСПОЛЬЗУЮ
-    // ФОТОИНДЕКС ВЫКОВЫРИВАЕТ НОМЕР ФОТОГРАФИИ ИЗ КАРТИНКИ, ПО КОТОРОЙ ТКНУЛИ
-    const clickedPhotoIndex = parseInt((picture.src.substring(picture.src.length - 10)).match(/\d+/));    
+    const clickedPhotoIndex = parseInt((picture.src.substring(picture.src.length - 10)).match(/\d+/));
     const requiredPhotoInArray = photosDescriptions.filter(photo => parseInt((photo.url.substring(photo.url.length - 10)).match(/\d+/)) == clickedPhotoIndex);
     const [requiredPhoto] = requiredPhotoInArray;
-    
     bigPicture.classList.remove('hidden');
     bigPicture.querySelector('.big-picture__img').children[0].src = requiredPhoto.url;
     bigPicture.querySelector('.likes-count').textContent = requiredPhoto.likes;
     bigPicture.querySelector('.social__caption').textContent = requiredPhoto.description;
-
-    bigPicture.querySelector('.comments-count').textContent = requiredPhoto.comments.length; // вычислять автоматически на основе количества потомков списка, и в этом блоке - разместить под генерацией комментариев, чтобы логичнее было, иначе как считать то, чего ещё нет... А, дак он и так автоматически вычисляет, всё норм.
-    bigPicture.querySelector('.comments-count').style.color = 'red'; // временно, чтобы видел свою ошибку
+    bigPicture.querySelector('.comments-count').textContent = requiredPhoto.comments.length;
+    bigPicture.querySelector('.comments-count').style.color = 'red'; // временно, чтобы видел свою ошибку... уже забыл, что за ошибка
 
     const commentList = bigPicture.querySelector('.social__comments');
     while (commentList.firstChild) {
       commentList.removeChild(commentList.firstChild);
     }
+
     for (let i = 0; requiredPhoto.comments.length; i++) {
-      commentList.insertAdjacentHTML('beforeend' ,`<li class="social__comment">
+      commentList.insertAdjacentHTML('beforeend' ,
+      `<li class="social__comment">
         <img
           class="social__picture"
           src="img/avatar-${requiredPhoto.comments[i].avatar}.svg"
@@ -185,27 +183,32 @@ const addClickListener = function (picture) {
   });
 };
 
-// Ну и как итог - проверь, что выводимый элемент страницы полностью соответствует сгенерированному объекту с данными (для этого уменьши количество отрисовываемых фото до 2-4)
-
-const pictures = document.querySelectorAll('.picture__img');
-for (let i = 0; i < pictures.length; i++) {
-  let picture = pictures[i];
-  addClickListener (picture);
+const miniatures = document.querySelectorAll('.picture__img');
+for (let i = 0; i < miniatures.length; i++) { // переделай на пикчур оф пикучуз... фор ду вроде? Ну или фор оф.
+  let miniature = miniatures[i];
+  addClickListener (miniature);
 }
 
-
+/*------------------------*/
 
 // Далее про закрывание большого изображения
+// Так, похоже вижу косячек... слушатель эскейпа на документ должен веситься только при клике на миниатюре. И удаляться при её закрытии.
+
+// Крестик закрытия полноэкранного просмотра
 const closePhotoButton = bigPicture.querySelector('.big-picture__cancel');
 
+// Функция, закрывающая модальное окно полноэкранного просмотра изображения
 const closePhoto = () => {
   bigPicture.classList.add('hidden');
 };
 
+// Функция-обработчик клика по крестику
 const onClosePhotoButtonClick = () => {
   closePhoto();
 }
 
+// Функция-обработчик нажатия на клавишу эскейп, КОТОРАЯ ДОЛЖНА ВЕШАТЬСЯ ТОЛЬКО ПРИ ОТКРЫТИИ МОДАЛКИ (клику по миниатюре)
+// И убираться при закрытии модалки
 const onPhotoEscPress = function (evt) {
   // в проекте 4 не кейкоды, как-то иначе. Переделай на новую версию и разберись в ней
   if (evt.keyCode === ESC_KEYCODE) {
@@ -251,6 +254,8 @@ document.addEventListener('keydown', onPhotoEscPress);
 // // Крестик для закрытия формы редактирования изображения
 // var formCloseCross = imageEditingForm.querySelector('.img-upload__cancel');
 
+
+// Кстати, Комодо драгон на движке Гугла (и девтулз у них вроде такой же, а софтвэйр_репортер_тул вроде не вытворяет - попробуй-ка его сделать основным браузером для разработки) И запиши уже себе где-нибудь, где висящие обработчики смотреть
 
 // // Функция показа формы редактирования изображения
 // var showImageEditingForm = function () {
@@ -360,7 +365,7 @@ document.addEventListener('keydown', onPhotoEscPress);
 //   if (arrayOfHashtags.length > 5) {
 //     hashtagsInput.setCustomValidity('Не более пяти слов! Сейчас: ' + arrayOfHashtags.length);
 //   } else {
-//    // ВОТ ПОЧТИ ВСЁ ЗАЕБИСЬ, НО ОН ВСЕГДА ПРОВЕРЯЕТ ТОЛЬКО ПОСЛЕДНИЙ ХЭШТЭГ МАССИВА - ЭТО ТОЧНО ПРО ЗАМЫКАНИЯ
+//    // ВОТ ПОЧТИ ВСЁ ХОРОШО, НО ОН ВСЕГДА ПРОВЕРЯЕТ ТОЛЬКО ПОСЛЕДНИЙ ХЭШТЭГ МАССИВА - ЭТО ТОЧНО ПРО ЗАМЫКАНИЯ
 //   // (так что пока тести с одним элементом)
 //   //НЕВЫПОЛНЕННЫЕ ЗАДАЧИ:
 //       // 1) один и тот же хэш-тег не может быть использован дважды;
